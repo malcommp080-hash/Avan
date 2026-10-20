@@ -42,7 +42,7 @@ Route::name('tienda.')->group(function () {
     Route::get('/crear-cuenta/exito', [ClienteAuthController::class, 'registroExito'])->name('registro.exito');
 
     Route::get('/recuperar-password', [ClienteAuthController::class, 'recuperar'])->name('recuperar');
-    Route::post('/recuperar-password', [ClienteAuthController::class, 'recuperarBuscar'])->name('recuperar.buscar');
+    Route::post('/recuperar-password', [ClienteAuthController::class, 'recuperarBuscar'])->middleware('throttle:recuperar')->name('recuperar.buscar');
     Route::get('/recuperar-password/nueva', [ClienteAuthController::class, 'recuperarPaso2'])->name('recuperar.paso2');
     Route::post('/recuperar-password/nueva', [ClienteAuthController::class, 'recuperarGuardar'])->name('recuperar.guardar');
     Route::get('/recuperar-password/exito', [ClienteAuthController::class, 'recuperarExito'])->name('recuperar.exito');

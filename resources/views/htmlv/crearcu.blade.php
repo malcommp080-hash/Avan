@@ -1,93 +1,43 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear cuenta — DAV Tienda</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/cuenta.css') }}">
-</head>
-<body>
+@extends('htmlv.auth')
 
-    <header class="site-header">
-        <img src="{{ asset('img/logo.jpg') }}" alt="Logo">
-        <div class="brand">DAV <span>Tienda</span></div>
-    </header>
+@section('titulo', 'Crear cuenta')
 
-    <div class="card-wrap">
-        <h1>Crear cuenta</h1>
-        <p class="subtitle">Regístrate para empezar a comprar</p>
-
-        <div class="form-card">
-
-            <form action="{{ route('tienda.registro.post') }}" method="post">
-                @csrf
-                @if(session('err'))<div style="background:#fde2e2;color:#b00020;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px">{{ session('err') }}</div>@endif
-        @if($errors->any())<div style="background:#fde2e2;color:#b00020;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
-                <div class="form-row">
-                    <div class="fg">
-                        <label>Nombre</label>
-                        <div class="icon-input"><span>👤</span>
-                            <input type="text" name="nombre" value="{{ old('nombre') }}" placeholder="Tu nombre" required>
-                        </div>
-                    </div>
-                    <div class="fg">
-                        <label>Apellido Paterno</label>
-                        <div class="icon-input"><span>👥</span>
-                            <input type="text" name="paterno" value="{{ old('paterno') }}" placeholder="Apellido" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="fg">
-                    <label>Teléfono (se usará para iniciar sesión)</label>
-                    <div class="icon-input"><span>📞</span>
-                        <input type="tel" name="telefono" value="{{ old('telefono') }}" placeholder="10 dígitos" maxlength="10" pattern="[0-9]{10}"
-                               title="Por favor, introduce exactamente 10 dígitos numéricos." required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="fg">
-                        <label>Contraseña</label>
-                        <div class="icon-input"><span>🔒</span>
-                            <input type="password" name="contrasena" placeholder="Mínimo 6 caracteres" required>
-                        </div>
-                    </div>
-                    <div class="fg">
-                        <label>Confirmar contraseña</label>
-                        <div class="icon-input"><span>🔑</span>
-                            <input type="password" name="confirmar" placeholder="Repite la contraseña" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="fg">
-                        <label>Dirección</label>
-                        <div class="icon-input"><span>🏠</span>
-                            <input type="text" name="direccion" value="{{ old('direccion') }}" placeholder="Tu dirección" required>
-                        </div>
-                    </div>
-                    <div class="fg">
-                        <label>Código Postal</label>
-                        <div class="icon-input"><span>📮</span>
-                            <input type="text" name="cp" value="{{ old('cp') }}" placeholder="5 dígitos" maxlength="5" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-row">
-                    <button type="submit" class="btn-primary">✅ Crear cuenta</button>
-                    <a href="{{ route('tienda.inicio') }}" class="btn-cancel">✖ Cancelar</a>
-                </div>
-            </form>
-
-            <div class="divider">— ¿Ya tienes cuenta? —</div>
-            <div class="link-login"><a href="{{ route('tienda.login') }}">Iniciar sesión aquí</a></div>
-
-        </div>
+@section('contenido')
+<form action="{{ route('tienda.registro.post') }}" method="post" style="display:contents">
+  @csrf
+  <div class="auth-card ancha">
+    <div class="auth-dos">
+      <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'persona'])
+        <div><label for="nombre">Nombre</label><input id="nombre" name="nombre" maxlength="20" value="{{ old('nombre') }}" autocomplete="given-name" required autofocus></div></div>
+      <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'apellido'])
+        <div><label for="paterno">Apellido paterno</label><input id="paterno" name="paterno" maxlength="20" value="{{ old('paterno') }}" autocomplete="family-name" required></div></div>
     </div>
 
-</body>
-</html>
+    <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'tel'])
+      <div><label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" name="telefono" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" title="10 dígitos" value="{{ old('telefono') }}" autocomplete="tel" required>
+        <div class="ayuda">10 dígitos. Lo usarás para iniciar sesión.</div></div></div>
+
+    <div class="auth-dos">
+      <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'clave'])
+        <div><label for="contrasena">Contraseña</label><input type="password" id="contrasena" name="contrasena" minlength="6" maxlength="100" autocomplete="new-password" required>
+          <div class="ayuda">Mínimo 6 caracteres</div></div></div>
+      <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'clave'])
+        <div><label for="confirmar">Confirmar contraseña</label><input type="password" id="confirmar" name="confirmar" minlength="6" maxlength="100" autocomplete="new-password" required></div></div>
+    </div>
+
+    <div class="auth-dos">
+      <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'casa'])
+        <div><label for="direccion">Dirección</label><input id="direccion" name="direccion" maxlength="100" value="{{ old('direccion') }}" autocomplete="street-address" required></div></div>
+      <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'ubicacion'])
+        <div><label for="cp">Código postal</label><input id="cp" name="cp" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" title="5 dígitos" value="{{ old('cp') }}" autocomplete="postal-code" required></div></div>
+    </div>
+    <a class="auth-link" href="{{ route('tienda.login') }}">¿Ya tienes cuenta? Inicia sesión</a>
+  </div>
+
+  <div class="auth-botones">
+    <button type="submit" class="btn-auth continuar">Continuar</button>
+    <a href="{{ route('tienda.inicio') }}" class="btn-auth cancelar">Cancelar</a>
+  </div>
+</form>
+@endsection

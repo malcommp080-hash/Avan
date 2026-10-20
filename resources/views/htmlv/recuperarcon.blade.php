@@ -1,52 +1,23 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar contraseña — DAV Tienda</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/recuperar.css') }}">
-</head>
-<body>
+@extends('htmlv.auth')
 
-<header class="site-header">
-    <img src="{{ asset('img/logo.jpg') }}" alt="Logo">
-    <div class="brand">DAV <span>Tienda</span></div>
-</header>
+@section('titulo', 'Recuperar contraseña')
 
-<div class="card-wrap">
+@section('contenido')
+<form action="{{ route('tienda.recuperar.buscar') }}" method="post" style="display:contents">
+  @csrf
+  <div class="auth-card">
+    <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'tel'])
+      <div><label for="telefono">Número de teléfono</label>
+        <input type="tel" id="telefono" name="telefono" inputmode="numeric" maxlength="10" placeholder="El teléfono de tu cuenta" value="{{ old('telefono') }}" required autofocus></div></div>
+    <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'ubicacion'])
+      <div><label for="cp">Código postal registrado</label>
+        <input id="cp" name="cp" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" title="5 dígitos" value="{{ old('cp') }}" required>
+        <div class="ayuda">Lo pedimos para confirmar que la cuenta es tuya.</div></div></div>
+  </div>
 
-    <div class="steps">
-        <div class="step-dot active">1</div>
-        <div class="step-line"></div>
-        <div class="step-dot">2</div>
-        <div class="step-line"></div>
-        <div class="step-dot">3</div>
-    </div>
-
-    <h1>🔑 Recuperar contraseña</h1>
-    <p class="subtitle">Verifica tu número de teléfono</p>
-
-    <div class="form-card">
-
-        <form action="{{ route('tienda.recuperar.buscar') }}" method="post">
-            @csrf
-            @if(session('err'))<div style="background:#fde2e2;color:#b00020;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px">{{ session('err') }}</div>@endif
-        @if($errors->any())<div style="background:#fde2e2;color:#b00020;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
-            <div class="fg">
-                <label>Número de teléfono</label>
-                <div class="icon-input"><span>📞</span>
-                <input type="tel" name="telefono" placeholder="El teléfono de tu cuenta" value="{{ old('telefono') }}" required autofocus></div>
-                <span class="help-text">Ingresa el número con el que creaste tu cuenta</span>
-            </div>
-
-            <button type="submit" class="btn-primary">🔍 Buscar cuenta</button>
-            <a href="{{ route('tienda.login') }}" class="btn-back">← Volver al inicio de sesión</a>
-        </form>
-
-    </div>
-</div>
-
-</body>
-</html>
+  <div class="auth-botones" style="margin-top:-22px">
+    <button type="submit" class="btn-auth cuenta">Buscar tu cuenta</button>
+  </div>
+</form>
+<a class="auth-volver" href="{{ route('tienda.login') }}">← Volver al inicio de sesión</a>
+@endsection

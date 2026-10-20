@@ -1,59 +1,19 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar contraseña — DAV Tienda</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/recuperar.css') }}">
-</head>
-<body>
+@extends('htmlv.auth')
 
-<header class="site-header">
-    <img src="{{ asset('img/logo.jpg') }}" alt="Logo">
-    <div class="brand">DAV <span>Tienda</span></div>
-</header>
+@section('titulo', 'Recuperar contraseña')
 
-<div class="card-wrap">
-
-    <div class="steps">
-        <div class="step-dot done">✓</div>
-        <div class="step-line done"></div>
-        <div class="step-dot active">2</div>
-        <div class="step-line"></div>
-        <div class="step-dot">3</div>
-    </div>
-
-    <h1>🔑 Recuperar contraseña</h1>
-    <p class="subtitle">Crea tu nueva contraseña</p>
-
-    <div class="form-card">
-
-        <div class="cliente-info">👤 Cuenta encontrada: <strong>{{ $cliente->nombre_completo }}</strong></div>
-
-        <form action="{{ route('tienda.recuperar.guardar') }}" method="post">
-            @csrf
-            @if(session('err'))<div style="background:#fde2e2;color:#b00020;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px">{{ session('err') }}</div>@endif
-        @if($errors->any())<div style="background:#fde2e2;color:#b00020;padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:14px">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
-            <div class="fg">
-                <label>Nueva contraseña</label>
-                <div class="icon-input"><span>🔒</span>
-                <input type="password" name="nueva" placeholder="Mínimo 6 caracteres" required autofocus></div>
-            </div>
-
-            <div class="fg">
-                <label>Confirmar contraseña</label>
-                <div class="icon-input"><span>🔑</span>
-                <input type="password" name="confirmar" placeholder="Repite la nueva contraseña" required></div>
-            </div>
-
-            <button type="submit" class="btn-primary">💾 Guardar contraseña</button>
-            <a href="{{ route('tienda.recuperar') }}" class="btn-back">← Volver</a>
-        </form>
-
-    </div>
-</div>
-
-</body>
-</html>
+@section('contenido')
+<form action="{{ route('tienda.recuperar.guardar') }}" method="post" class="auth-card">
+  @csrf
+  <h2>Cuenta encontrada: {{ $cliente->Nombre }}</h2>
+  <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'clave'])
+    <div><label for="nueva">Nueva contraseña</label><input type="password" id="nueva" name="nueva" minlength="6" maxlength="100" autocomplete="new-password" required autofocus>
+      <div class="ayuda">Mínimo 6 caracteres</div></div></div>
+  <div class="auth-fila">@include('htmlv.partials.icono', ['i' => 'clave'])
+    <div><label for="confirmar">Confirma tu contraseña</label><input type="password" id="confirmar" name="confirmar" minlength="6" maxlength="100" autocomplete="new-password" required></div></div>
+  <div style="text-align:center;margin-top:20px">
+    <button type="submit" class="btn-auth redondo">Guardar contraseña</button><br>
+    <a class="auth-volver" href="{{ route('tienda.recuperar') }}" style="font-size:15px">← Volver</a>
+  </div>
+</form>
+@endsection

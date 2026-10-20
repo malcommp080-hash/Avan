@@ -58,7 +58,7 @@ class ClienteAuthController extends Controller
 
     public function registro(Request $request)
     {
-        $d = $this->validar($request, [
+        $d = $request->validate([
             'nombre'     => 'required|string|max:20',
             'paterno'    => 'required|string|max:20',
             'telefono'   => ['required', 'regex:/^[0-9]{10}$/', 'unique:cliente,Telefono'],
@@ -66,7 +66,11 @@ class ClienteAuthController extends Controller
             'confirmar'  => 'required|same:contrasena',
             'direccion'  => 'required|string|max:100',
             'cp'         => ['required', 'regex:/^[0-9]{5}$/'],
-        ]);
+        ], $this->mensajes + [
+            'telefono.unique' => 'Este número ya cuenta con una cuenta.',
+            'telefono.regex'  => 'El teléfono debe tener 10 dígitos.',
+            'cp.regex'        => 'El código postal debe tener 5 dígitos.',
+        ], $this->atributos + ['paterno' => 'apellido paterno']);
 
         Cliente::create([
             'Nombre' => $d['nombre'], 'Ap_paterno' => $d['paterno'], 'Telefono' => $d['telefono'],
@@ -90,11 +94,13 @@ class ClienteAuthController extends Controller
 
     public function recuperarBuscar(Request $request)
     {
-        $d = $this->validar($request, ['telefono' => 'required|string|max:10']);
+        $d = $this->validar($request, ['telefono' => 'required|string|max:10', 'cp' => ['required', 'regex:/^[0-9]{5}$/']]);
 
-        $cliente = Cliente::where('Telefono', trim($d['telefono']))->first();
+        // Además del teléfono se pide el C.P. registrado; el mensaje no dice cuál de los dos falló
+        $cliente = Cliente::where('Telefono', trim($d['telefono']))->where('CP', $d['cp'])->first();
         if (!$cliente) {
-            return back()->withInput()->with('err', 'No encontramos una cuenta con ese teléfono.');
+            ControlAcceso::registrar(ControlAcceso::CLIENTE, trim($d['telefono']), null, 'FALLIDO');
+            return back()->withInput($request->only('telefono'))->with('err', 'No encontramos una cuenta con esos datos.');
         }
 
         session(['recuperar_id' => $cliente->Id_cliente]);
