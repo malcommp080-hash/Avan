@@ -59,5 +59,6 @@
 
 </div>
 
+@include('partials.inactividad')
 </body>
 </html>

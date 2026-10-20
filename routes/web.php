@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\BitacoraController;
 use App\Http\Controllers\ClienteAuthController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PedidoClienteController;
 use App\Http\Controllers\PedidoProveedorController;
 use App\Http\Controllers\PrendaController;
@@ -28,7 +30,7 @@ Route::name('tienda.')->group(function () {
     Route::get('/categorias', [TiendaController::class, 'categorias'])->name('categorias');
 
     Route::get('/login', [ClienteAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [ClienteAuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [ClienteAuthController::class, 'login'])->middleware('throttle:login')->name('login.post');
     Route::post('/logout', [ClienteAuthController::class, 'logout'])->name('logout');
 
     Route::get('/crear-cuenta', [ClienteAuthController::class, 'showRegistro'])->name('registro');
@@ -52,11 +54,17 @@ Route::name('tienda.')->group(function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn () => redirect()->route('admin.dashboard'));
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [AdminAuthController::class, 'login'])->middleware('throttle:login')->name('login.post');
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    Route::get('/recuperar-password', [AdminAuthController::class, 'showRecuperar'])->name('recuperar');
+    Route::post('/recuperar-password', [AdminAuthController::class, 'recuperar'])->middleware('throttle:recuperar')->name('recuperar.post');
 
     Route::middleware('admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+        Route::post('notificaciones/leer-todas', [NotificacionController::class, 'leerTodas'])->name('notificaciones.leer-todas');
+        Route::get('notificaciones/{notificacion}', [NotificacionController::class, 'abrir'])->name('notificaciones.abrir');
 
         // Operatividad
         Route::resource('ventas', VentaController::class)->except(['create', 'show'])->parameters(['ventas' => 'venta']);
@@ -85,8 +93,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Sistema
         Route::get('respaldar-bd', [RespaldoController::class, 'index'])->name('respaldo.index');
         Route::get('respaldar-bd/descargar', [RespaldoController::class, 'descargar'])->name('respaldo.descargar');
-        Route::get('restaurar-bd', [RespaldoController::class, 'restaurarForm'])->name('restaurar.index');
-        Route::post('restaurar-bd', [RespaldoController::class, 'restaurar'])->name('restaurar.store');
         Route::get('reporte-pdf', [ReportePdfController::class, 'index'])->name('reporte.index');
         Route::get('reporte-pdf/clientes', [ReportePdfController::class, 'clientes'])->name('reporte.clientes');
     });
@@ -94,5 +100,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Solo administradores
     Route::middleware('admin:admin')->group(function () {
         Route::resource('usuarios', EmpleadoController::class)->except(['create', 'show'])->parameters(['usuarios' => 'usuario']);
+        Route::get('bitacora', [BitacoraController::class, 'index'])->name('bitacora.index');
+        Route::get('restaurar-bd', [RespaldoController::class, 'restaurarForm'])->name('restaurar.index');
+        Route::post('restaurar-bd', [RespaldoController::class, 'restaurar'])->name('restaurar.store');
     });
 });

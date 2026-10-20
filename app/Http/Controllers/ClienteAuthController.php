@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Services\ControlAcceso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,22 +22,30 @@ class ClienteAuthController extends Controller
     public function login(Request $request)
     {
         $d = $this->validar($request, ['telefono' => 'required|string|max:10', 'contrasena' => 'required|string']);
+        $telefono = trim($d['telefono']);
 
-        $cliente = Cliente::where('Telefono', trim($d['telefono']))->first();
+        if (ControlAcceso::bloqueada(ControlAcceso::CLIENTE, $telefono)) {
+            ControlAcceso::registrar(ControlAcceso::CLIENTE, $telefono, null, 'BLOQUEADO');
+            return back()->withInput($request->only('telefono'))->with('err', ControlAcceso::MSG_BLOQUEO);
+        }
+
+        $cliente = Cliente::where('Telefono', $telefono)->first();
         if (!$cliente || !Hash::check($d['contrasena'], $cliente->Contrasena)) {
-            return back()->withInput($request->only('telefono'))->with('err', 'Teléfono o contraseña incorrectos.');
+            $bloqueada = ControlAcceso::fallo(ControlAcceso::CLIENTE, $telefono, $cliente?->Id_cliente);
+            return back()->withInput($request->only('telefono'))
+                ->with('err', $bloqueada ? ControlAcceso::MSG_BLOQUEO : 'Número de teléfono o contraseña incorrectos.');
         }
 
         $request->session()->regenerate();
         session(['cliente_id' => $cliente->Id_cliente, 'cliente_nombre' => $cliente->nombre_completo]);
+        ControlAcceso::exito(ControlAcceso::CLIENTE, $telefono, $cliente->Id_cliente);
 
         return redirect()->route('tienda.tienda');
     }
 
     public function logout(Request $request)
     {
-        $request->session()->forget(['cliente_id', 'cliente_nombre']);
-        $request->session()->regenerateToken();
+        ControlAcceso::cerrar(ControlAcceso::CLIENTE);
         return redirect()->route('tienda.inicio');
     }
 

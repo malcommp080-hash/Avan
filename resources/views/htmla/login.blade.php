@@ -20,10 +20,12 @@
     <h1>Bienvenido</h1>
     <p class="sub">Acceso al panel de administración</p>
 
+    @env('local')
     <div class="hint-box">
         💡 Acceso por defecto: <strong>admin</strong> / <strong>admin123</strong><br>
         O usa las credenciales de un empleado registrado.
     </div>
+    @endenv
 
     @if($errors->any())
     <div class="alert-error">{{ $errors->first() }}</div>
@@ -32,7 +34,7 @@
     <form action="{{ route('admin.login.post') }}" method="post">
         @csrf
         <div class="fg">
-            <label>Usuario / Teléfono</label>
+            <label>Número de teléfono</label>
             <div class="input-wrap">
                 <i class="fas fa-user"></i>
                 <input type="text" name="telefono" placeholder="Teléfono o 'admin'" value="{{ old('telefono') }}" required autofocus>
@@ -47,8 +49,12 @@
             </div>
         </div>
 
+        <div style="text-align:right;margin:-6px 0 14px;font-size:13px">
+            <a href="{{ route('admin.recuperar') }}">¿Olvidó su contraseña?</a>
+        </div>
+
         <button type="submit" class="btn-login">
-            <i class="fas fa-sign-in-alt"></i> Ingresar al sistema
+            <i class="fas fa-sign-in-alt"></i> Iniciar sesión
         </button>
     </form>
 
