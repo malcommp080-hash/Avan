@@ -2,50 +2,79 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Venta;
+use App\Models\Pago;
+use App\Services\Inventario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * RF004: el administrador revisa los pagos de las compras en línea (folio, cliente, monto y ticket)
+ * y los aprueba o rechaza. Un pago ya resuelto no se puede volver a modificar.
+ */
 class ValidacionPagoController extends Controller
 {
-    public const ESTADOS  = ['PENDIENTE', 'PAGADO', 'PARCIAL', 'CANCELADO'];
-    public const METODOS  = ['EFECTIVO', 'TRANSFERENCIA', 'TARJETA', 'CHEQUE'];
-
-    public function index()
+    public function index(Request $request)
     {
-        $ventas = Venta::reales()->with('cliente')->orderByDesc('Id_venta')->get()->each(function ($v) {
-            // El estado de pago vive en Realizacion: "PAGO:{ESTADO}:{METODO}:{notas}"
-            $p = explode(':', $v->Realizacion, 4);
-            $esPago = ($p[0] === 'PAGO');
-            $v->estado_pago = $esPago ? ($p[1] ?? 'PENDIENTE') : 'PENDIENTE';
-            $v->metodo_pago = $esPago ? ($p[2] ?? '') : '';
-        });
+        $f = $request->validate(['estado' => 'nullable|in:PENDIENTE,APROBADO,RECHAZADO', 'buscar' => 'nullable|string|max:40']);
+        $estado = $f['estado'] ?? 'PENDIENTE';
+
+        $pagos = Pago::with(['venta.cliente', 'venta.detalles.producto', 'validador'])
+            ->where('Estado', $estado)
+            ->when($f['buscar'] ?? null, fn ($q, $v) => $q->where(fn ($w) => $w->where('Folio', 'like', "%{$v}%")
+                ->orWhereHas('venta.cliente', fn ($c) => $c->where('Nombre', 'like', "%{$v}%")->orWhere('Ap_paterno', 'like', "%{$v}%")->orWhere('Telefono', 'like', "%{$v}%"))))
+            // Pendientes: primero los que ya tienen ticket y los más antiguos
+            ->when($estado === 'PENDIENTE', fn ($q) => $q->orderByRaw('Comprobante IS NULL')->orderBy('Id_pago'), fn ($q) => $q->orderByDesc('Validado_en'))
+            ->paginate(20)->withQueryString();
+
+        $conteo = Pago::select('Estado', DB::raw('COUNT(*) n'), DB::raw('SUM(Monto) total'))->groupBy('Estado')->get()->keyBy('Estado');
 
         return view('htmla.validacionpa', [
-            'saludo' => $this->saludo(),
-            'ventas' => $ventas,
-            'pagados'    => $ventas->where('estado_pago', 'PAGADO')->count(),
-            'pendientes' => $ventas->where('estado_pago', 'PENDIENTE')->count(),
-            'parciales'  => $ventas->where('estado_pago', 'PARCIAL')->count(),
-            'montoPendiente' => (float) $ventas->whereIn('estado_pago', ['PENDIENTE', 'PARCIAL'])->sum('Total'),
-            'metodos' => self::METODOS,
+            'saludo'   => $this->saludo(),
+            'pagos'    => $pagos,
+            'estado'   => $estado,
+            'filtros'  => $f,
+            'conteo'   => $conteo,
+            'puedeValidar' => in_array(session('admin_rol'), ['admin', 'contador'], true),
         ]);
     }
 
-    public function update(Request $request, Venta $venta)
+    public function aprobar(Pago $pago)
     {
-        abort_if(str_starts_with($venta->Realizacion, 'PROV:'), 404);
+        return $this->resolver($pago, 'APROBADO', null);
+    }
 
-        $d = $this->validar($request, [
-            'estado_pago' => 'required|in:' . implode(',', self::ESTADOS),
-            'metodo_pago' => 'required|in:' . implode(',', self::METODOS),
-            'notas'       => 'nullable|string|max:10',
-        ]);
+    public function rechazar(Request $request, Pago $pago)
+    {
+        $d = $request->validate(['motivo' => 'required|string|max:255'], ['motivo.required' => 'Escribe el motivo del rechazo para que el cliente lo vea.']);
+        return $this->resolver($pago, 'RECHAZADO', $d['motivo']);
+    }
 
-        // Realizacion es varchar(40)
-        $venta->Realizacion = Str::limit("PAGO:{$d['estado_pago']}:{$d['metodo_pago']}:" . ($d['notas'] ?? ''), 40, '');
-        $venta->save();
+    private function resolver(Pago $pago, string $estado, ?string $motivo)
+    {
+        $resultado = DB::transaction(function () use ($pago, $estado, $motivo) {
+            // Se vuelve a leer bloqueado: si dos administradores lo resuelven a la vez, sólo cuenta el primero
+            $p = Pago::with('venta.detalles')->lockForUpdate()->find($pago->Id_pago);
+            if (!$p || $p->Estado !== 'PENDIENTE') {
+                return $p;
+            }
+            $p->update([
+                'Estado' => $estado, 'Motivo_rechazo' => $motivo,
+                'Validado_por' => session('admin_id'), 'Validado_en' => now(),
+            ]);
+            // Al rechazar, las piezas apartadas regresan al inventario
+            if ($estado === 'RECHAZADO' && $p->venta) {
+                Inventario::devolver($p->venta->detalles);
+            }
+            return true;
+        });
 
-        return redirect()->route('admin.validacion-pago.index')->with('ok', 'Estado de pago actualizado correctamente.');
+        if ($resultado !== true) {
+            $ya = $resultado ? strtolower(Pago::ESTADOS[$resultado->Estado] ?? $resultado->Estado) : 'eliminado';
+            return back()->with('err', "El pago {$pago->Folio} ya fue {$ya} y no puede modificarse.");
+        }
+
+        return back()->with('ok', $estado === 'APROBADO'
+            ? "Pago {$pago->Folio} aprobado. La venta ya cuenta en los reportes."
+            : "Pago {$pago->Folio} rechazado. Las piezas regresaron al inventario.");
     }
 }

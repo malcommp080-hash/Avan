@@ -17,7 +17,10 @@
         <h3>{{ $p?->Folio ?? '#' . $v->Id_venta }} · ${{ number_format($v->Total, 2) }}</h3>
         <div class="meta">{{ $v->fecha_texto }} · {{ $v->Total_piezas }} pieza(s) · Entrega en {{ $v->Direccion_entrega }}, C.P. {{ $v->CP_entrega }}</div>
         @if($p)<div style="margin-top:6px"><span class="estado {{ $p->Estado }}">{{ $p->estado_texto }}</span>
-          @if($p->Validado_en)<span class="meta"> · {{ $p->Validado_en->format('d/m/Y H:i') }}</span>@endif</div>@endif
+          @if($p->Validado_en)<span class="meta"> · {{ $p->Validado_en->format('d/m/Y H:i') }}</span>@endif</div>
+          @if($p->Estado === 'RECHAZADO')<div class="meta" style="color:var(--error);margin-top:4px">Motivo: {{ $p->Motivo_rechazo }}. Las piezas se liberaron; puedes volver a hacer tu pedido.</div>@endif
+          @if($p->Estado === 'APROBADO')<div class="meta" style="color:var(--ok);margin-top:4px">¡Pago confirmado! Preparamos tu pedido para la entrega.</div>@endif
+        @endif
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         @if($p && $p->Estado === 'PENDIENTE' && !$p->Comprobante)

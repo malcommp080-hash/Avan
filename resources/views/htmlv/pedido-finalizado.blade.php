@@ -26,7 +26,13 @@
   </div>
 
   <div class="banda-blanca">
-    @if($venta->pago?->Comprobante)
+    @if($venta->pago?->Estado === 'APROBADO')
+      ✅ Tu pago fue aprobado el {{ $venta->pago->Validado_en?->format('d/m/Y') }}. ¡Gracias por tu compra!
+      <div style="font-size:14px;color:var(--tenue);margin-top:6px">Folio {{ $venta->pago->Folio }}</div>
+    @elseif($venta->pago?->Estado === 'RECHAZADO')
+      <span style="color:var(--error)">Tu pago fue rechazado.</span> Motivo: {{ $venta->pago->Motivo_rechazo }}
+      <div style="font-size:14px;color:var(--tenue);margin-top:6px">Las piezas se liberaron. Puedes <a href="{{ route('tienda.categorias') }}">volver a hacer tu pedido</a> o comunicarte con la tienda.</div>
+    @elseif($venta->pago?->Comprobante)
       Felicidades por su compra, en breve se validará su pedido. :)
       <div style="font-size:14px;color:var(--tenue);margin-top:6px">Folio {{ $venta->pago->Folio }} · Puedes ver el estado en <a href="{{ route('tienda.pedidos') }}">Mis pedidos</a>.</div>
     @else

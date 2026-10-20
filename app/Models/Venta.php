@@ -39,10 +39,15 @@ class Venta extends Model
         return $this->hasMany(DetalleVenta::class, 'Id_venta', 'Id_venta');
     }
 
-    /** Las ventas reales: excluye los pedidos a proveedor (se guardan en esta misma tabla con 'PROV:'). */
+    /**
+     * Las ventas reales: excluye los pedidos a proveedor (se guardan en esta misma tabla con 'PROV:')
+     * y las compras en línea cuyo pago todavía no se aprueba (RF004) o se rechazó.
+     */
     public function scopeReales($q)
     {
-        return $q->where('Realizacion', 'not like', 'PROV:%');
+        return $q->where('Realizacion', 'not like', 'PROV:%')
+            ->where(fn ($w) => $w->where('Origen', '!=', 'EN_LINEA')
+                ->orWhereHas('pago', fn ($p) => $p->where('Estado', 'APROBADO')));
     }
 
     /** Fecha con hora si se registró (ventas nuevas); sólo fecha en las ventas anteriores a RF002. */

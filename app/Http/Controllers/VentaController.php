@@ -105,7 +105,10 @@ class VentaController extends Controller
 
         return $this->borrar(function () use ($venta) {
             DB::transaction(function () use ($venta) {
-                Inventario::devolver($venta->detalles);
+                // Si el pago en línea se rechazó, las piezas ya habían regresado al inventario
+                if ($venta->pago?->Estado !== 'RECHAZADO') {
+                    Inventario::devolver($venta->detalles);
+                }
                 $venta->delete(); // el detalle se borra en cascada
             });
         }, 'Venta eliminada y stock devuelto al inventario.', route('admin.ventas.index'));

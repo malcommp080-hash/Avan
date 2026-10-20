@@ -104,7 +104,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('proveedores', ProveedorController::class)->except(['create', 'show'])->parameters(['proveedores' => 'proveedor']);
 
         Route::get('validacion-pago', [ValidacionPagoController::class, 'index'])->name('validacion-pago.index');
-        Route::put('validacion-pago/{venta}', [ValidacionPagoController::class, 'update'])->name('validacion-pago.update');
+        // RF004: aprobar o rechazar lo hacen administradores y contadores
+        Route::middleware('admin:admin,contador')->group(function () {
+            Route::put('validacion-pago/{pago}/aprobar', [ValidacionPagoController::class, 'aprobar'])->name('validacion-pago.aprobar');
+            Route::put('validacion-pago/{pago}/rechazar', [ValidacionPagoController::class, 'rechazar'])->name('validacion-pago.rechazar');
+        });
 
         // RF009: cotizaciones de clientes
         Route::get('cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones.index');

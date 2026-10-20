@@ -13,7 +13,7 @@ class Pago extends Model
 
     public const ESTADOS = ['PENDIENTE' => 'Pendiente de validar', 'APROBADO' => 'Aprobado', 'RECHAZADO' => 'Rechazado'];
 
-    protected $fillable = ['Folio', 'Id_venta', 'Monto', 'Metodo', 'Estado', 'Referencia', 'Comprobante', 'Comprobante_en', 'Validado_por', 'Validado_en', 'Creado_en'];
+    protected $fillable = ['Folio', 'Id_venta', 'Monto', 'Metodo', 'Estado', 'Referencia', 'Comprobante', 'Comprobante_en', 'Validado_por', 'Validado_en', 'Motivo_rechazo', 'Creado_en'];
 
     protected $casts = ['Monto' => 'float', 'Comprobante_en' => 'datetime', 'Validado_en' => 'datetime', 'Creado_en' => 'datetime'];
 
