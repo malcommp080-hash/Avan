@@ -14,7 +14,7 @@ class ClienteAuthController extends Controller
     public function showLogin()
     {
         if (session()->has('cliente_id')) {
-            return redirect()->route('tienda.tienda');
+            return redirect()->route('tienda.inicio');
         }
         return view('htmlv.login');
     }
@@ -40,7 +40,7 @@ class ClienteAuthController extends Controller
         session(['cliente_id' => $cliente->Id_cliente, 'cliente_nombre' => $cliente->nombre_completo]);
         ControlAcceso::exito(ControlAcceso::CLIENTE, $telefono, $cliente->Id_cliente);
 
-        return redirect()->route('tienda.tienda');
+        return redirect()->intended(route('tienda.inicio'));
     }
 
     public function logout(Request $request)

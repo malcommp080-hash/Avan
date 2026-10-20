@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\CarritoController;
+use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\ClienteAuthController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\DashboardController;
@@ -9,6 +11,7 @@ use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PedidoClienteController;
+use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\PedidoProveedorController;
 use App\Http\Controllers\PrendaController;
 use App\Http\Controllers\ProductoController;
@@ -43,7 +46,28 @@ Route::name('tienda.')->group(function () {
     Route::post('/recuperar-password/nueva', [ClienteAuthController::class, 'recuperarGuardar'])->name('recuperar.guardar');
     Route::get('/recuperar-password/exito', [ClienteAuthController::class, 'recuperarExito'])->name('recuperar.exito');
 
-    Route::get('/tienda', [TiendaController::class, 'tienda'])->middleware('cliente')->name('tienda');
+    // RF003: catálogo y carrito (se puede llenar el carrito sin sesión)
+    Route::get('/catalogo', [TiendaController::class, 'catalogo'])->name('catalogo');
+    Route::get('/producto/{producto}', [TiendaController::class, 'producto'])->name('producto');
+    Route::get('/carrito', [CarritoController::class, 'index'])->name('carrito');
+    Route::post('/carrito', [CarritoController::class, 'agregar'])->name('carrito.agregar');
+    Route::patch('/carrito', [CarritoController::class, 'actualizar'])->name('carrito.actualizar');
+    Route::delete('/carrito', [CarritoController::class, 'quitar'])->name('carrito.quitar');
+
+    // Pagar y cotizar sí requieren cuenta
+    Route::middleware('cliente')->group(function () {
+        Route::get('/tienda', fn () => redirect()->route('tienda.inicio'))->name('tienda');
+        Route::get('/pedido/confirmar', [PedidoController::class, 'confirmar'])->name('pedido.confirmar');
+        Route::post('/pedido', [PedidoController::class, 'crear'])->name('pedido.crear');
+        Route::get('/pedido/{venta}/pago', [PedidoController::class, 'pago'])->name('pedido.pago');
+        Route::get('/pedido/{venta}/comprobante', [PedidoController::class, 'comprobante'])->name('pedido.comprobante');
+        Route::post('/pedido/{venta}/comprobante', [PedidoController::class, 'subirComprobante'])->name('pedido.comprobante.subir');
+        Route::get('/pedido/{venta}/finalizado', [PedidoController::class, 'finalizado'])->name('pedido.finalizado');
+        Route::delete('/pedido/{venta}', [PedidoController::class, 'cancelar'])->name('pedido.cancelar');
+        Route::get('/mis-pedidos', [PedidoController::class, 'index'])->name('pedidos');
+        Route::post('/cotizacion', [PedidoController::class, 'cotizar'])->name('cotizar');
+        Route::get('/cotizacion/{cotizacion}', [PedidoController::class, 'cotizacion'])->name('cotizacion');
+    });
 });
 
 /*
@@ -81,6 +105,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('validacion-pago', [ValidacionPagoController::class, 'index'])->name('validacion-pago.index');
         Route::put('validacion-pago/{venta}', [ValidacionPagoController::class, 'update'])->name('validacion-pago.update');
+
+        // RF009: cotizaciones de clientes
+        Route::get('cotizaciones', [CotizacionController::class, 'index'])->name('cotizaciones.index');
+        Route::get('cotizaciones/{cotizacion}', [CotizacionController::class, 'show'])->name('cotizaciones.show');
+        Route::put('cotizaciones/{cotizacion}/atender', [CotizacionController::class, 'atender'])->name('cotizaciones.atender');
 
         // Catálogos
         Route::resource('clientes', ClienteController::class)->except(['create', 'show'])->parameters(['clientes' => 'cliente']);

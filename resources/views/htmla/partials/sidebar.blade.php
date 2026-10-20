@@ -11,6 +11,7 @@
       ['admin.pedidos-proveedores.index', 'admin.pedidos-proveedores.*', 'fa-truck-loading', 'Pedidos a proveedores', false],
       ['admin.proveedores.index', 'admin.proveedores.*', 'fa-truck', 'Proveedores', false],
       ['admin.validacion-pago.index', 'admin.validacion-pago.*', 'fa-money-check-dollar', 'Validación de pago', false],
+      ['admin.cotizaciones.index', 'admin.cotizaciones.*', 'fa-file-invoice-dollar', 'Cotizaciones', false],
     ],
     'Catálogos' => [
       ['admin.clientes.index', 'admin.clientes.*', 'fa-users', 'Clientes', false],

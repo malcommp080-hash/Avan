@@ -1,0 +1,226 @@
+/* Tienda DAV — estilos tomados del diseño en Figma (azul #82B4F4, barras blancas, botones píldora) */
+:root {
+  --azul: #82b4f4;
+  --azul-osc: #4f8fe6;
+  --azul-claro: #e8f1fd;
+  --blanco: #ffffff;
+  --texto: #111111;
+  --tenue: #5b6474;
+  --borde: #dbe3ee;
+  --ok: #1f9d55;
+  --error: #c62828;
+  --aviso: #b26a00;
+  --sombra: 0 4px 10px rgba(0, 0, 0, .18);
+  --sombra-suave: 0 2px 6px rgba(0, 0, 0, .10);
+  --radio: 22px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--texto);
+  background: var(--blanco);
+  line-height: 1.45;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+main { flex: 1; }
+
+/* ---------- Encabezado ---------- */
+.enc { background: var(--azul); padding: 14px 16px 0; position: sticky; top: 0; z-index: 50; box-shadow: var(--sombra-suave); }
+.enc-fila { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 18px; }
+.enc-logo img { width: 74px; height: 74px; border-radius: 50%; object-fit: cover; box-shadow: var(--sombra); }
+.buscador { flex: 1; display: flex; align-items: center; background: var(--blanco); border-radius: 30px; padding: 0 8px 0 22px; height: 50px; box-shadow: var(--sombra); min-width: 0; }
+.buscador input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 16px; background: transparent; }
+.buscador button { border: 0; background: transparent; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; }
+.buscador button:hover { background: var(--azul-claro); }
+.enc-carrito { position: relative; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; text-decoration: none; }
+.enc-carrito:hover { background: rgba(255,255,255,.25); }
+.enc-carrito .globo { position: absolute; top: 2px; right: 0; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #e53935; color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; border: 2px solid var(--azul); }
+.enc-nav { max-width: 720px; margin: 10px auto -18px; background: var(--blanco); border-radius: 18px; border: 1.5px solid #222; box-shadow: var(--sombra); display: flex; justify-content: space-around; flex-wrap: wrap; padding: 6px 14px; gap: 4px 16px; position: relative; }
+.enc-nav a, .enc-nav button { font: inherit; font-size: 14px; text-decoration: none; padding: 4px 8px; border-radius: 10px; background: none; border: 0; cursor: pointer; color: var(--texto); }
+.enc-nav a:hover, .enc-nav button:hover, .enc-nav .act { background: var(--azul-claro); }
+.enc-nav .hola { color: var(--tenue); font-size: 13px; align-self: center; }
+.espacio-nav { height: 34px; }
+
+/* ---------- Panel azul con barra de título (pantallas internas de Figma) ---------- */
+.panel { background: var(--azul); padding: 26px 0 40px; min-height: calc(100vh - 210px); }
+.barra-titulo { background: var(--blanco); margin: 0 0 26px; padding: 12px 16px; position: relative; }
+.barra-titulo .dentro { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: center; position: relative; min-height: 44px; }
+.barra-titulo h1 { margin: 0; font-size: clamp(24px, 4vw, 38px); font-weight: 500; text-align: center; padding: 0 90px; }
+.barra-titulo .regresar { position: absolute; right: 0; bottom: -6px; font-size: 14px; text-decoration: none; }
+.barra-titulo .regresar:hover { text-decoration: underline; }
+.contenido { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+/* ---------- Botones píldora ---------- */
+.pildora { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 30px; border-radius: 30px; border: 0; background: var(--blanco); color: var(--texto); font: inherit; font-size: 17px; text-decoration: none; cursor: pointer; box-shadow: var(--sombra-suave); transition: transform .12s, box-shadow .12s, background .12s; }
+.pildora:hover { transform: translateY(-1px); box-shadow: var(--sombra); }
+.pildora:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+.pildora.azul { background: var(--azul); }
+.pildora.oscura { background: #111; color: #fff; }
+.pildora.chica { min-height: 38px; padding: 6px 18px; font-size: 15px; }
+.pildora[disabled] { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* ---------- Categorías (menú de píldoras) ---------- */
+.cat-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px 60px; max-width: 760px; margin: 40px auto 0; padding: 0 16px; }
+.cat-lista a { min-height: 56px; background: var(--azul); font-size: 18px; flex-direction: column; gap: 0; }
+.cat-lista a small { font-size: 12px; color: #1f3b63; }
+.cat-pagina { background: var(--blanco); }
+
+/* ---------- Filtros (chips) ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 26px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: 22px; background: rgba(255,255,255,.55); color: var(--texto); text-decoration: none; font-size: 15px; font-weight: 500; border: 2px solid transparent; }
+.chip:hover { background: var(--blanco); }
+.chip.act { background: var(--blanco); border-color: #111; box-shadow: var(--sombra-suave); }
+.resultado { text-align: center; color: #1f3b63; font-size: 14px; margin: -12px 0 20px; }
+
+/* ---------- Tarjetas del catálogo ---------- */
+.grid-prod { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
+.tarjeta { background: var(--blanco); border-radius: var(--radio); overflow: hidden; text-decoration: none; display: flex; flex-direction: column; box-shadow: var(--sombra-suave); transition: transform .15s, box-shadow .15s; }
+.tarjeta:hover { transform: translateY(-3px); box-shadow: var(--sombra); }
+.tarjeta .foto { aspect-ratio: 4 / 5; background: #f1f4f9; display: grid; place-items: center; overflow: hidden; }
+.tarjeta .foto img { width: 100%; height: 100%; object-fit: cover; }
+.tarjeta .foto .sin { font-size: 54px; opacity: .3; }
+.tarjeta .info { padding: 12px 16px 16px; }
+.tarjeta h3 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
+.tarjeta .meta { font-size: 13px; color: var(--tenue); }
+.tarjeta .precio { font-size: 20px; font-weight: 700; margin-top: 6px; }
+.tarjeta .mayoreo { font-size: 12.5px; color: var(--ok); font-weight: 600; }
+.vacio { background: var(--blanco); border-radius: var(--radio); padding: 40px 20px; text-align: center; max-width: 560px; margin: 0 auto; }
+
+/* ---------- Ficha del producto (Figma: tarjeta blanca redondeada) ---------- */
+.ficha { background: var(--blanco); border-radius: 34px; box-shadow: var(--sombra); max-width: 860px; margin: 0 auto; padding: 28px; display: grid; grid-template-columns: minmax(200px, 300px) 1fr; gap: 34px; }
+.ficha .foto { border-radius: 18px; overflow: hidden; background: #f1f4f9; aspect-ratio: 4 / 5; display: grid; place-items: center; }
+.ficha .foto img { width: 100%; height: 100%; object-fit: cover; }
+.ficha h2 { margin: 0 0 4px; font-size: 26px; font-weight: 500; }
+.ficha .meta { color: var(--tenue); font-size: 14px; }
+.ficha .precio { font-size: 30px; font-weight: 600; margin: 12px 0 4px; }
+.ficha .desc { font-size: 14.5px; color: #333; margin: 6px 0 12px; }
+.ficha .color { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 14px; }
+.ficha .color .muestra { width: 16px; height: 16px; border-radius: 4px; border: 1px solid #999; }
+.etiqueta { font-size: 13px; font-weight: 600; margin: 14px 0 8px; }
+.tallas { display: flex; flex-wrap: wrap; gap: 8px; }
+.tallas input { position: absolute; opacity: 0; pointer-events: none; }
+.tallas label { min-width: 48px; height: 42px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--borde); display: grid; place-items: center; font-weight: 600; cursor: pointer; user-select: none; }
+.tallas label:hover { border-color: #111; }
+.tallas input:checked + label { background: #111; color: #fff; border-color: #111; }
+.tallas input:focus-visible + label { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+.tallas input:disabled + label { opacity: .35; text-decoration: line-through; cursor: not-allowed; }
+.stock { font-size: 13.5px; color: var(--tenue); margin-top: 10px; min-height: 20px; }
+.cantidad { display: inline-flex; align-items: center; border: 1.5px solid var(--borde); border-radius: 14px; overflow: hidden; }
+.cantidad button { width: 42px; height: 42px; border: 0; background: #f5f7fb; font-size: 20px; cursor: pointer; }
+.cantidad button:hover { background: var(--azul-claro); }
+.cantidad input { width: 64px; height: 42px; border: 0; text-align: center; font: inherit; font-size: 16px; -moz-appearance: textfield; }
+.cantidad input::-webkit-outer-spin-button, .cantidad input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.aviso-mayoreo { margin-top: 12px; font-size: 14px; padding: 8px 12px; border-radius: 10px; background: #effaf3; color: #14532d; }
+.ficha-acciones { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.ficha-acciones .pildora { background: var(--azul); }
+.ficha-acciones .pildora.secundaria { background: var(--blanco); border: 1.5px solid var(--borde); box-shadow: none; }
+
+/* ---------- Avisos ---------- */
+.alerta { max-width: 860px; margin: 0 auto 20px; padding: 12px 18px; border-radius: 14px; background: var(--blanco); box-shadow: var(--sombra-suave); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.alerta.ok { border-left: 6px solid var(--ok); }
+.alerta.err { border-left: 6px solid var(--error); }
+.alerta a { font-weight: 600; }
+
+/* ---------- Carrito ---------- */
+.carrito { display: grid; grid-template-columns: 1fr 330px; gap: 24px; align-items: start; }
+.lista-carrito { background: var(--blanco); border-radius: var(--radio); padding: 8px 20px; box-shadow: var(--sombra-suave); }
+.item { display: grid; grid-template-columns: 84px 1fr auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--borde); }
+.item:last-child { border-bottom: 0; }
+.item .mini { width: 84px; height: 100px; border-radius: 12px; overflow: hidden; background: #f1f4f9; display: grid; place-items: center; font-size: 30px; }
+.item .mini img { width: 100%; height: 100%; object-fit: cover; }
+.item h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.item h3 a { text-decoration: none; }
+.item .meta { font-size: 13px; color: var(--tenue); }
+.item .falta { color: var(--error); font-size: 13px; font-weight: 600; }
+.item .controles { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+.item .cantidad button, .item .cantidad input { height: 36px; }
+.item .cantidad button { width: 36px; }
+.item .cantidad input { width: 50px; }
+.item .quitar { background: none; border: 0; color: var(--error); font: inherit; font-size: 13.5px; cursor: pointer; padding: 4px; text-decoration: underline; }
+.item .importe { text-align: right; font-weight: 700; font-size: 17px; white-space: nowrap; }
+.item .importe small { display: block; font-weight: 500; font-size: 12.5px; color: var(--tenue); }
+.item .importe .may { color: var(--ok); }
+.resumen-caja { background: var(--blanco); border-radius: var(--radio); padding: 22px; box-shadow: var(--sombra-suave); position: sticky; top: 150px; }
+.resumen-caja h2 { margin: 0 0 14px; font-size: 20px; font-weight: 600; }
+.resumen-caja .fila { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+.resumen-caja .total { font-size: 24px; font-weight: 700; border-top: 1px solid var(--borde); padding-top: 12px; margin-top: 6px; }
+.resumen-caja .pildora { width: 100%; margin-top: 12px; }
+.resumen-caja .nota { font-size: 12.5px; color: var(--tenue); margin-top: 10px; text-align: center; }
+
+/* ---------- Pantallas del pedido (confirmación, pago, ticket, finalizada) ---------- */
+.dos-col { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 60px; max-width: 980px; margin: 0 auto; }
+.campo-pildora { background: var(--blanco); border-radius: 30px; padding: 10px 26px; min-height: 56px; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--sombra-suave); }
+.campo-pildora label, .campo-pildora .lbl { font-size: 12px; color: var(--tenue); font-weight: 600; }
+.campo-pildora input { border: 0; outline: 0; font: inherit; font-size: 17px; background: transparent; padding: 2px 0; width: 100%; }
+.campo-pildora .valor { font-size: 17px; }
+.campo-pildora:focus-within { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+.cuadro { background: var(--blanco); border-radius: 6px; box-shadow: var(--sombra); padding: 20px 24px; min-height: 76px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-size: 15px; }
+.cuadro strong { font-size: 18px; font-weight: 600; word-break: break-all; }
+.miniaturas { background: var(--blanco); border: 1.5px solid #111; border-radius: 4px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; min-height: 150px; }
+.miniaturas img, .miniaturas .sin { width: 70px; height: 84px; object-fit: cover; border-radius: 8px; background: #f1f4f9; display: grid; place-items: center; }
+.acciones-centro { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 46px; }
+.acciones-centro .pildora { min-width: 190px; min-height: 60px; font-size: 19px; }
+.subir { background: var(--blanco); min-height: 320px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; cursor: pointer; border: 3px dashed transparent; transition: border-color .15s; }
+.subir:hover, .subir.arrastrando { border-color: var(--azul-osc); }
+.subir input { display: none; }
+.subir .vista img { max-height: 220px; border-radius: 8px; }
+.subir .ttl { font-size: 22px; }
+.banda-blanca { background: var(--blanco); padding: 30px 16px; text-align: center; font-size: 19px; margin-top: 46px; }
+
+/* ---------- Mis pedidos ---------- */
+.pedido { background: var(--blanco); border-radius: var(--radio); padding: 18px 22px; box-shadow: var(--sombra-suave); margin-bottom: 14px; display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: center; }
+.pedido h3 { margin: 0; font-size: 17px; }
+.pedido .meta { font-size: 13.5px; color: var(--tenue); }
+.estado { display: inline-block; padding: 3px 12px; border-radius: 14px; font-size: 12.5px; font-weight: 700; }
+.estado.PENDIENTE { background: #fff4e0; color: var(--aviso); }
+.estado.APROBADO, .estado.ATENDIDA { background: #e6f6ec; color: var(--ok); }
+.estado.RECHAZADO { background: #fdecec; color: var(--error); }
+.seccion-titulo { color: #102a4c; font-size: 20px; font-weight: 600; margin: 30px 0 14px; }
+
+/* ---------- Portada ---------- */
+.portada { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; max-width: 1100px; margin: 60px auto 30px; padding: 0 16px; }
+.destacado { text-decoration: none; display: flex; flex-direction: column; align-items: center; }
+.destacado .tit { background: var(--azul); border-radius: 50% / 60%; padding: 10px 34px; font-size: 19px; margin-bottom: -18px; z-index: 1; position: relative; white-space: nowrap; }
+.destacado .img { width: 100%; aspect-ratio: 4 / 5; border-radius: 40px; overflow: hidden; background: #f1f4f9; position: relative; box-shadow: var(--sombra-suave); transition: transform .15s; }
+.destacado:hover .img { transform: translateY(-3px); }
+.destacado .img img { width: 100%; height: 100%; object-fit: cover; }
+.destacado .px { position: absolute; left: 12px; bottom: 14px; background: var(--blanco); border-radius: 12px; padding: 4px 12px; font-family: Georgia, serif; font-weight: 700; font-size: 22px; }
+.pie { margin-top: 30px; }
+.pie .caja { background: var(--azul); border-radius: 60px 60px 0 0; max-width: 520px; margin: 0 auto; padding: 20px 40px; font-size: 16px; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+  .carrito { grid-template-columns: 1fr; }
+  .resumen-caja { position: static; }
+  .portada { grid-template-columns: 1fr 1fr; gap: 28px; }
+}
+@media (max-width: 680px) {
+  .enc { padding: 10px 12px 0; }
+  .enc-fila { gap: 10px; }
+  .enc-logo img { width: 52px; height: 52px; }
+  .buscador { height: 44px; padding-left: 16px; }
+  .enc-nav { margin: 8px 0 -16px; border-radius: 14px; padding: 4px 6px; gap: 2px 4px; }
+  .enc-nav a, .enc-nav button { font-size: 13px; padding: 4px 6px; }
+  .barra-titulo h1 { padding: 0 64px 0 0; text-align: left; font-size: 24px; }
+  .ficha { grid-template-columns: 1fr; padding: 18px; gap: 18px; border-radius: 24px; }
+  .ficha .foto { max-width: 320px; margin: 0 auto; width: 100%; }
+  .dos-col { grid-template-columns: 1fr; gap: 16px; }
+  .acciones-centro { gap: 14px; margin-top: 28px; }
+  .acciones-centro .pildora { min-width: 0; flex: 1; font-size: 17px; }
+  .item { grid-template-columns: 64px 1fr; }
+  .item .mini { width: 64px; height: 78px; }
+  .item .importe { grid-column: 2; text-align: left; }
+  .portada { grid-template-columns: 1fr; max-width: 360px; }
+  .grid-prod { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .tarjeta .info { padding: 10px 12px 12px; }
+  .tarjeta .precio { font-size: 17px; }
+  .cat-lista { gap: 16px; margin-top: 20px; }
+  .pedido { grid-template-columns: 1fr; }
+}

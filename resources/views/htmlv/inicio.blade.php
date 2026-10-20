@@ -1,64 +1,32 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda</title>
-    <link rel="stylesheet" href="{{ asset('css/inicio.css') }}">
-</head>
-<body>
+@extends('htmlv.layout')
 
-<div class="contenedor">
+@section('titulo', 'Inicio')
 
-    <header>
-        <div class="top-header">
-            <div class="logo">
-                <img src="{{ asset('img/logo.jpg') }}" alt="Logo de Ventas">
-            </div>
+@section('contenido')
+@php
+  // Las 3 tarjetas de Figma: si hay producto con foto se usa; si no, la imagen de muestra
+  $tarjetas = [
+    ['Oferta del día', $oferta, 'ves1.jpg', route('tienda.catalogo', ['filtro' => 'ofertas'])],
+    ['Menos de $100', $menos100, 'ves2.jpg', route('tienda.catalogo', ['filtro' => 'menos100'])],
+    ['Más vendidos', $masVendido, 'ves3.jpg', route('tienda.catalogo', ['filtro' => 'vendidos'])],
+  ];
+@endphp
 
-            <div class="barra-busqueda">
-                <input type="text" placeholder="Buscar">
-                <span>🔍</span>
-            </div>
-        </div>
+<div style="max-width:1100px;margin:30px auto 0;padding:0 16px">@include('htmlv.partials.avisos')</div>
 
-        <nav>
-            <a href="{{ route('tienda.categorias') }}">Categorías</a>
-            <a href="#">Ofertas</a>
-            <a href="{{ route('tienda.login') }}">Iniciar sesión</a>
-            <a href="{{ route('tienda.registro') }}">Crear Cuenta</a>
-        </nav>
-    </header>
+<section class="portada">
+  @foreach($tarjetas as [$titulo, $p, $muestra, $url])
+  <a class="destacado" href="{{ $url }}">
+    <span class="tit">{{ $titulo }}</span>
+    <span class="img">
+      <img src="{{ $p?->imagen_url ?? asset('img/' . $muestra) }}" alt="{{ $p?->Nombre ?? $titulo }}">
+      @if($p)<span class="px">${{ rtrim(rtrim(number_format($p->tiene_mayoreo && $titulo === 'Oferta del día' ? $p->Precio_mayoreo : $p->Precioneto, 2), '0'), '.') }}</span>@endif
+    </span>
+  </a>
+  @endforeach
+</section>
 
-    <section class="productos">
-
-        <div class="producto">
-            <div class="titulo">Oferta del día</div>
-            <img src="{{ asset('img/ves1.jpg') }}" alt="">
-        </div>
-
-        <div class="producto">
-            <div class="titulo">Menos de $100</div>
-            <img src="{{ asset('img/ves2.jpg') }}" alt="">
-            @if($precioMenos100 !== null)<div class="precio">${{ rtrim(rtrim(number_format($precioMenos100, 2), '0'), '.') }}</div>@endif
-        </div>
-
-        <div class="producto">
-            <div class="titulo">Mas vendidos</div>
-            <img src="{{ asset('img/ves3.jpg') }}" alt="">
-            @if($precioMasVendido !== null)<div class="precio">${{ rtrim(rtrim(number_format($precioMasVendido, 2), '0'), '.') }}</div>@endif
-        </div>
-
-    </section>
-
-    <!-- DIRECCION -->
-    <footer>
-        <p>Visítanos en:</p>
-        <p>C. Reforma, San Lucas Atoyatenco,</p>
-        <p>74053 San Martín Texmelucan de Labastida Puebla</p>
-    </footer>
-
+<div style="text-align:center;margin:10px 0 40px">
+  <a href="{{ route('tienda.categorias') }}" class="pildora azul">Ver todas las categorías →</a>
 </div>
-
-</body>
-</html>
+@endsection

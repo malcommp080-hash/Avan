@@ -12,7 +12,10 @@ class Venta extends Model
 
     public const FORMAS_PAGO = ['EFECTIVO' => 'Efectivo', 'TARJETA' => 'Tarjeta', 'TRANSFERENCIA' => 'Transferencia'];
 
-    protected $fillable = ['Fecha', 'Fecha_hora', 'Realizacion', 'Total', 'Forma_pago', 'Origen', 'Id_cliente', 'Id_empleado', 'Total_piezas'];
+    // Las compras en línea se pagan por depósito o transferencia a la cuenta de la tienda
+    public const PAGO_EN_LINEA = 'DEPOSITO';
+
+    protected $fillable = ['Fecha', 'Fecha_hora', 'Realizacion', 'Total', 'Forma_pago', 'Origen', 'Direccion_entrega', 'CP_entrega', 'Id_cliente', 'Id_empleado', 'Total_piezas'];
 
     protected $casts = ['Fecha' => 'date', 'Fecha_hora' => 'datetime', 'Total' => 'float'];
 
@@ -24,6 +27,11 @@ class Venta extends Model
     public function empleado()
     {
         return $this->belongsTo(Empleado::class, 'Id_empleado', 'Id_empleado');
+    }
+
+    public function pago()
+    {
+        return $this->hasOne(Pago::class, 'Id_venta', 'Id_venta');
     }
 
     public function detalles()
@@ -45,6 +53,6 @@ class Venta extends Model
 
     public function getFormaPagoTextoAttribute(): string
     {
-        return self::FORMAS_PAGO[$this->Forma_pago] ?? '—';
+        return (self::FORMAS_PAGO + [self::PAGO_EN_LINEA => 'Depósito / transferencia'])[$this->Forma_pago] ?? '—';
     }
 }
