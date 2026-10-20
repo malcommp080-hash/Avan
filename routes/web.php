@@ -67,7 +67,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('notificaciones/{notificacion}', [NotificacionController::class, 'abrir'])->name('notificaciones.abrir');
 
         // Operatividad
-        Route::resource('ventas', VentaController::class)->except(['create', 'show'])->parameters(['ventas' => 'venta']);
+        Route::resource('ventas', VentaController::class)->only(['index', 'store', 'show', 'destroy'])->parameters(['ventas' => 'venta']);
 
         Route::get('pedidos-clientes', [PedidoClienteController::class, 'index'])->name('pedidos-clientes.index');
         Route::post('pedidos-clientes', [PedidoClienteController::class, 'store'])->name('pedidos-clientes.store');
