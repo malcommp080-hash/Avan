@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\DetalleVenta;
 use App\Models\Producto;
 use App\Models\Venta;
+use App\Services\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -20,7 +21,7 @@ class VentaController extends Controller
         return view('htmla.ventas', [
             'ventas'    => Venta::reales()->with('cliente')->withCount('detalles')->orderByDesc('Id_venta')->get(),
             'clientes'  => Cliente::orderBy('Nombre')->get(),
-            'productos' => Producto::orderBy('Nombre')->get(['Id_producto', 'Nombre', 'Stock', 'Precioneto']),
+            'productos' => Producto::with('tallas')->where('Activo', true)->orderBy('Nombre')->get(),
             'formas'    => Venta::FORMAS_PAGO,
         ]);
     }
@@ -32,12 +33,12 @@ class VentaController extends Controller
             'id_cliente'           => 'required|exists:cliente,Id_cliente',
             'forma_pago'           => 'required|in:' . implode(',', array_keys(Venta::FORMAS_PAGO)),
             'items'                => 'required|array|min:1',
-            'items.*.id_producto'  => 'required|integer|distinct|exists:registroproductos,Id_producto',
+            'items.*.id_producto'  => 'required|integer|exists:registroproductos,Id_producto',
+            'items.*.talla'        => 'required|string|max:5',
             'items.*.cantidad'     => 'required|integer|min:1|max:100000',
         ], [
             'required' => self::MSG_INCOMPLETO,
             'items.min' => self::MSG_INCOMPLETO,
-            'distinct' => 'Un producto aparece dos veces; junta las cantidades en un solo renglón.',
             'min'      => 'La cantidad debe ser al menos 1.',
             'exists'   => 'El cliente o un producto seleccionado ya no existe.',
             'in'       => 'Selecciona una forma de pago válida.',
@@ -48,23 +49,15 @@ class VentaController extends Controller
         }
         $d = $validador->validated();
 
+        // El mismo producto y talla no puede ir en dos renglones
+        $combos = array_map(fn ($i) => $i['id_producto'] . '|' . $i['talla'], $d['items']);
+        if (count($combos) !== count(array_unique($combos))) {
+            return back()->withInput()->withErrors(['venta' => 'Un producto con la misma talla aparece dos veces; junta las cantidades en un solo renglón.']);
+        }
+
         try {
             $venta = DB::transaction(function () use ($d) {
-                // Se bloquean los productos para que dos ventas simultáneas no vendan el mismo stock
-                $productos = Producto::whereIn('Id_producto', array_column($d['items'], 'id_producto'))
-                    ->lockForUpdate()->get()->keyBy('Id_producto');
-
-                $renglones = [];
-                foreach ($d['items'] as $item) {
-                    $p = $productos[$item['id_producto']];
-                    $cant = (int) $item['cantidad'];
-                    if ($cant > $p->Stock) {
-                        throw ValidationException::withMessages(['venta' => "Sólo hay {$p->Stock} pieza(s) de \"{$p->Nombre}\" en inventario."]);
-                    }
-                    // El precio sale de la BD, nunca del formulario
-                    $renglones[] = ['producto' => $p, 'cantidad' => $cant, 'precio' => (float) $p->Precioneto,
-                                    'subtotal' => round($cant * (float) $p->Precioneto, 2)];
-                }
+                $renglones = Inventario::renglones($d['items']);
 
                 $ahora = now();
                 $venta = Venta::create([
@@ -81,11 +74,11 @@ class VentaController extends Controller
 
                 foreach ($renglones as $r) {
                     DetalleVenta::create([
-                        'Id_venta' => $venta->Id_venta, 'Id_producto' => $r['producto']->Id_producto,
+                        'Id_venta' => $venta->Id_venta, 'Id_producto' => $r['producto']->Id_producto, 'Talla' => $r['talla']->Talla,
                         'Cantidad' => $r['cantidad'], 'Precio_unitario' => $r['precio'], 'Subtotal' => $r['subtotal'],
                     ]);
-                    $r['producto']->decrement('Stock', $r['cantidad']);
                 }
+                Inventario::descontar($renglones);
 
                 return $venta;
             });
@@ -112,9 +105,7 @@ class VentaController extends Controller
 
         return $this->borrar(function () use ($venta) {
             DB::transaction(function () use ($venta) {
-                foreach ($venta->detalles as $det) {
-                    Producto::where('Id_producto', $det->Id_producto)->increment('Stock', $det->Cantidad);
-                }
+                Inventario::devolver($venta->detalles);
                 $venta->delete(); // el detalle se borra en cascada
             });
         }, 'Venta eliminada y stock devuelto al inventario.', route('admin.ventas.index'));

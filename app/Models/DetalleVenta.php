@@ -10,7 +10,7 @@ class DetalleVenta extends Model
     protected $primaryKey = 'Id_detallev';
     public $timestamps = false;
 
-    protected $fillable = ['Id_venta', 'Id_producto', 'Cantidad', 'Precio_unitario', 'Subtotal'];
+    protected $fillable = ['Id_venta', 'Id_producto', 'Talla', 'Cantidad', 'Precio_unitario', 'Subtotal'];
 
     protected $casts = ['Precio_unitario' => 'float', 'Subtotal' => 'float'];
 

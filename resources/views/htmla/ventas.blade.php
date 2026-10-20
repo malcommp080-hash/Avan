@@ -4,7 +4,7 @@
 
 @push('head')
 <style>
-  .renglon { display:grid; grid-template-columns: minmax(180px,3fr) minmax(80px,1fr) minmax(100px,1fr) minmax(100px,1fr) 40px; gap:10px; align-items:end; margin-bottom:10px; }
+  .renglon { display:grid; grid-template-columns: minmax(180px,3fr) minmax(90px,1fr) minmax(70px,.8fr) minmax(100px,1fr) minmax(100px,1fr) 40px; gap:10px; align-items:end; margin-bottom:10px; }
   .renglon .fg { margin-bottom:0; }
   .renglon .lectura { background:transparent; border-style:dashed; }
   .total-venta { display:flex; justify-content:flex-end; align-items:baseline; gap:12px; margin:16px 0; font-size:15px; color:var(--muted); }
@@ -21,7 +21,13 @@
 <div class="psub">Selecciona los productos, la cantidad y la forma de pago; el total se calcula solo</div>
 
 @php
-  $items = old('items', [['id_producto' => '', 'cantidad' => 1]]);
+  $items = old('items', [['id_producto' => '', 'talla' => '', 'cantidad' => 1]]);
+  // Datos para calcular en el navegador; el servidor vuelve a calcular todo al guardar
+  $catalogo = $productos->mapWithKeys(fn ($p) => [$p->Id_producto => [
+    'nombre' => $p->Nombre, 'precio' => $p->Precioneto,
+    'mayoreo' => $p->tiene_mayoreo ? $p->Precio_mayoreo : null, 'min' => $p->Min_mayoreo,
+    'tallas' => $p->tallas_ordenadas->map(fn ($t) => ['t' => $t->Talla, 's' => $t->Stock])->values(),
+  ]]);
 @endphp
 
 <div class="fcard" style="margin-bottom:20px">
@@ -60,9 +66,12 @@
           <select class="fc sel-producto" name="items[{{ $i }}][id_producto]" data-requerido>
             <option value="">-- Selecciona producto --</option>
             @foreach($productos as $p)
-            <option value="{{ $p->Id_producto }}" data-precio="{{ $p->Precioneto }}" data-stock="{{ $p->Stock }}" @selected(($it['id_producto'] ?? '') == $p->Id_producto) @disabled($p->Stock < 1)>{{ $p->Nombre }} — ${{ number_format($p->Precioneto, 2) }} ({{ $p->Stock }} disp.)</option>
+            <option value="{{ $p->Id_producto }}" @selected(($it['id_producto'] ?? '') == $p->Id_producto) @disabled($p->Stock < 1)>{{ $p->Nombre }}{{ $p->Color ? ' · ' . $p->Color : '' }} — ${{ number_format($p->Precioneto, 2) }}</option>
             @endforeach
           </select>
+        </div>
+        <div class="fg"><label>Talla *</label>
+          <select class="fc sel-talla" name="items[{{ $i }}][talla]" data-requerido data-actual="{{ $it['talla'] ?? '' }}"><option value="">—</option></select>
         </div>
         <div class="fg"><label>Cantidad *</label><input class="fc inp-cantidad" type="number" min="1" step="1" name="items[{{ $i }}][cantidad]" value="{{ $it['cantidad'] ?? 1 }}" data-requerido></div>
         <div class="fg"><label>Precio unitario</label><input class="fc lectura inp-precio" type="text" value="$0.00" readonly tabindex="-1"></div>
@@ -111,21 +120,50 @@
 @push('scripts')
 <script>
 (function () {
+  const catalogo = @json($catalogo);
   const cont = document.getElementById('renglones');
   const form = document.getElementById('formVenta');
   const aviso = document.getElementById('avisoCliente');
   const dinero = n => '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const filas = () => [...cont.querySelectorAll('.renglon')];
+
+  // Llena el select de tallas según el producto elegido (muestra el stock de cada una)
+  function llenarTallas(r) {
+    const p = catalogo[r.querySelector('.sel-producto').value];
+    const sel = r.querySelector('.sel-talla');
+    const actual = sel.value || sel.dataset.actual || '';
+    sel.innerHTML = '<option value="">—</option>';
+    if (!p) return;
+    p.tallas.forEach(t => {
+      const o = new Option(`${t.t} (${t.s})`, t.t);
+      o.dataset.stock = t.s;
+      o.disabled = t.s < 1;
+      sel.add(o);
+    });
+    if ([...sel.options].some(o => o.value === actual && !o.disabled)) sel.value = actual;
+    else if (p.tallas.filter(t => t.s > 0).length === 1) sel.value = p.tallas.find(t => t.s > 0).t;
+    sel.dataset.actual = '';
+  }
 
   function recalcular() {
+    // Piezas por producto (todas las tallas) para decidir si aplica mayoreo
+    const piezas = {};
+    filas().forEach(r => {
+      const id = r.querySelector('.sel-producto').value;
+      piezas[id] = (piezas[id] || 0) + Math.max(0, parseInt(r.querySelector('.inp-cantidad').value, 10) || 0);
+    });
     let total = 0;
-    cont.querySelectorAll('.renglon').forEach(r => {
-      const op = r.querySelector('.sel-producto').selectedOptions[0];
-      const precio = op && op.dataset.precio ? parseFloat(op.dataset.precio) : 0;
+    filas().forEach(r => {
+      const id = r.querySelector('.sel-producto').value;
+      const p = catalogo[id];
       const cant = Math.max(0, parseInt(r.querySelector('.inp-cantidad').value, 10) || 0);
+      let precio = p ? p.precio : 0, etiqueta = '';
+      if (p && p.mayoreo && piezas[id] >= p.min) { precio = p.mayoreo; etiqueta = ' (mayoreo)'; }
       const sub = Math.round(precio * cant * 100) / 100;
-      r.querySelector('.inp-precio').value = dinero(precio);
+      r.querySelector('.inp-precio').value = dinero(precio) + etiqueta;
       r.querySelector('.inp-subtotal').value = dinero(sub);
-      if (op && op.dataset.stock) r.querySelector('.inp-cantidad').max = op.dataset.stock;
+      const op = r.querySelector('.sel-talla').selectedOptions[0];
+      r.querySelector('.inp-cantidad').max = op && op.dataset.stock ? op.dataset.stock : '';
       total += sub;
     });
     document.getElementById('totalVenta').textContent = dinero(total);
@@ -134,8 +172,9 @@
 
   // Los nombres items[N][...] se renumeran para que no queden huecos
   function renumerar() {
-    cont.querySelectorAll('.renglon').forEach((r, i) => {
+    filas().forEach((r, i) => {
       r.querySelector('.sel-producto').name = `items[${i}][id_producto]`;
+      r.querySelector('.sel-talla').name = `items[${i}][talla]`;
       r.querySelector('.inp-cantidad').name = `items[${i}][cantidad]`;
     });
   }
@@ -143,6 +182,7 @@
   document.getElementById('btnAgregar').addEventListener('click', () => {
     const nuevo = cont.firstElementChild.cloneNode(true);
     nuevo.querySelector('.sel-producto').value = '';
+    nuevo.querySelector('.sel-talla').innerHTML = '<option value="">—</option>';
     nuevo.querySelector('.inp-cantidad').value = 1;
     cont.appendChild(nuevo);
     renumerar(); recalcular();
@@ -153,8 +193,11 @@
     const b = e.target.closest('.btn-quitar');
     if (b && cont.children.length > 1) { b.closest('.renglon').remove(); renumerar(); recalcular(); }
   });
+  cont.addEventListener('change', e => {
+    if (e.target.classList.contains('sel-producto')) { e.target.closest('.renglon').querySelector('.sel-talla').value = ''; llenarTallas(e.target.closest('.renglon')); }
+    recalcular();
+  });
   cont.addEventListener('input', recalcular);
-  cont.addEventListener('change', recalcular);
 
   // RF002.4: mismo mensaje en el navegador antes de enviar (el servidor también lo valida)
   form.addEventListener('submit', e => {
@@ -162,14 +205,14 @@
     const vacio = [...form.querySelectorAll('[data-requerido]')].some(c => !c.value || (c.type === 'number' && parseInt(c.value, 10) < 1));
     if (vacio) msg = 'Complete todos los campos antes de guardar.';
     if (!msg) {
-      const ids = [...cont.querySelectorAll('.sel-producto')].map(s => s.value);
-      if (new Set(ids).size !== ids.length) msg = 'Un producto aparece dos veces; junta las cantidades en un solo renglón.';
+      const combos = filas().map(r => r.querySelector('.sel-producto').value + '|' + r.querySelector('.sel-talla').value);
+      if (new Set(combos).size !== combos.length) msg = 'Un producto con la misma talla aparece dos veces; junta las cantidades en un solo renglón.';
     }
     if (!msg) {
-      cont.querySelectorAll('.renglon').forEach(r => {
-        const op = r.querySelector('.sel-producto').selectedOptions[0];
+      filas().forEach(r => {
+        const op = r.querySelector('.sel-talla').selectedOptions[0];
         const cant = parseInt(r.querySelector('.inp-cantidad').value, 10);
-        if (!msg && op && cant > parseInt(op.dataset.stock, 10)) msg = `Sólo hay ${op.dataset.stock} pieza(s) de "${op.text.split(' — ')[0]}" en inventario.`;
+        if (!msg && op && cant > parseInt(op.dataset.stock, 10)) msg = `Sólo hay ${op.dataset.stock} pieza(s) de "${catalogo[r.querySelector('.sel-producto').value].nombre}" talla ${op.value}.`;
       });
     }
     if (msg) {
@@ -179,6 +222,7 @@
     }
   });
 
+  filas().forEach(llenarTallas);
   recalcular();
 })();
 </script>

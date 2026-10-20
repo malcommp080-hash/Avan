@@ -39,7 +39,7 @@
     <tbody>
       @forelse($venta->detalles as $d)
       <tr>
-        <td>{{ $d->producto?->Nombre ?? 'Producto eliminado' }}</td>
+        <td>{{ $d->producto?->Nombre ?? 'Producto eliminado' }}@if($d->Talla && $d->Talla !== 'UNI') <span style="color:var(--muted)">· Talla {{ $d->Talla }}</span>@endif</td>
         <td class="num">{{ $d->Cantidad }}</td>
         <td class="num">${{ number_format($d->Precio_unitario, 2) }}</td>
         <td class="num">${{ number_format($d->Subtotal, 2) }}</td>
