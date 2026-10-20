@@ -23,6 +23,7 @@
     'Sistema' => [
       ['admin.respaldo.index', 'admin.respaldo.*', 'fa-download', 'Respaldar BD', false],
       ['admin.restaurar.index', 'admin.restaurar.*', 'fa-upload', 'Restaurar BD', true],
+      ['admin.reportes.index', 'admin.reportes.*', 'fa-chart-column', 'Reportes de ventas', false],
       ['admin.reporte.index', 'admin.reporte.*', 'fa-file-pdf', 'Reporte PDF', false],
       ['admin.bitacora.index', 'admin.bitacora.*', 'fa-clipboard-list', 'Bitácora de accesos', true],
     ],

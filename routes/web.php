@@ -17,6 +17,7 @@ use App\Http\Controllers\PrendaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReportePdfController;
+use App\Http\Controllers\ReporteVentasController;
 use App\Http\Controllers\RespaldoController;
 use App\Http\Controllers\TiendaController;
 use App\Http\Controllers\ValidacionPagoController;
@@ -126,6 +127,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Sistema
         Route::get('respaldar-bd', [RespaldoController::class, 'index'])->name('respaldo.index');
         Route::get('respaldar-bd/descargar', [RespaldoController::class, 'descargar'])->name('respaldo.descargar');
+        Route::get('reportes', [ReporteVentasController::class, 'index'])->name('reportes.index');
         Route::get('reporte-pdf', [ReportePdfController::class, 'index'])->name('reporte.index');
         Route::get('reporte-pdf/clientes', [ReportePdfController::class, 'clientes'])->name('reporte.clientes');
     });
