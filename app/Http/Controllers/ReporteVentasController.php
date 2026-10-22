@@ -29,6 +29,12 @@ class ReporteVentasController extends Controller
             return back()->withErrors(['desde' => 'El rango no puede ser mayor a 3 años.'])->withInput();
         }
 
+        return view('htmla.reportes', self::calcular($desde, $hasta));
+    }
+
+    /** Totales por semana y por mes, top de productos y la comprobación contra SQL (RF007.3). La usa también la API móvil. */
+    public static function calcular(Carbon $desde, Carbon $hasta): array
+    {
         $ventas = Venta::reales()->whereBetween('Fecha', [$desde->toDateString(), $hasta->toDateString()])
             ->get(['Id_venta', 'Fecha', 'Total', 'Total_piezas', 'Origen']);
 
@@ -72,7 +78,7 @@ class ReporteVentasController extends Controller
             ->orderByDesc('importe')->limit(5)
             ->get(['p.Nombre', DB::raw('SUM(d.Cantidad) as piezas'), DB::raw('SUM(d.Subtotal) as importe')]);
 
-        return view('htmla.reportes', [
+        return [
             'desde'   => $desde, 'hasta' => $hasta,
             'semanas' => $semanas, 'meses' => $meses,
             'total'   => $total, 'totalSql' => $totalSql, 'cuadra' => $cuadra,
@@ -81,6 +87,6 @@ class ReporteVentasController extends Controller
             'promedio' => $ventas->count() ? $total / $ventas->count() : 0,
             'enLinea' => round($ventas->where('Origen', 'EN_LINEA')->sum('Total'), 2),
             'top'     => $top,
-        ]);
+        ];
     }
 }
