@@ -76,7 +76,7 @@ class RespaldoController extends Controller
     }
 
     /** Divide un script SQL en sentencias respetando comillas y comentarios de línea. */
-    private function separarSentencias(string $sql): array
+    protected function separarSentencias(string $sql): array
     {
         $sentencias = [];
         $actual = '';

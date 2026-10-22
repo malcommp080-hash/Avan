@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Empleado;
+use App\Models\Notificacion;
 use App\Services\ControlAcceso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,21 @@ class AuthController extends ApiController
         DB::table('empleado_token')->where('Id_token', $request->attributes->get('token_id'))->delete();
         ControlAcceso::registrar(ControlAcceso::ADMIN, '', $this->empleado()->Id_empleado, 'LOGOUT');
         return $this->ok('Sesión cerrada.');
+    }
+
+    /** RF001.4: avisa a los administradores; responde igual exista o no el teléfono. */
+    public function recuperar(Request $request)
+    {
+        $d = $this->validar($request, ['telefono' => 'required|string|max:50']);
+
+        $empleado = Empleado::where('Telefono', trim($d['telefono']))->first();
+        if ($empleado) {
+            Notificacion::aRoles(['admin'], 'RECUPERAR_PASSWORD',
+                "{$empleado->Nombre} {$empleado->Ap_paterno} (tel. {$empleado->Telefono}) solicitó restablecer su contraseña.",
+                route('admin.usuarios.edit', $empleado->Id_empleado));
+        }
+
+        return $this->ok('Si el teléfono está registrado, se avisó al administrador para que restablezca tu contraseña. Comunícate con él para recibir la nueva.');
     }
 
     public function yo()

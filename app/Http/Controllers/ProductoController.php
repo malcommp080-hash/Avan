@@ -14,7 +14,7 @@ class ProductoController extends Controller
 {
     private const CARPETA = 'img/productos';
 
-    private function reglas(): array
+    protected function reglas(): array
     {
         return [
             'nombre'         => 'required|string|max:60',
@@ -34,7 +34,7 @@ class ProductoController extends Controller
         ];
     }
 
-    private function validarProducto(Request $request): array
+    protected function validarProducto(Request $request): array
     {
         return $request->validate($this->reglas(), $this->mensajes + [
             'precio_mayoreo.lt' => 'El precio de mayoreo debe ser menor al precio de venta.',
@@ -125,7 +125,7 @@ class ProductoController extends Controller
         return $resp;
     }
 
-    private function datos(array $d): array
+    protected function datos(array $d): array
     {
         $mayoreo = isset($d['precio_mayoreo']) && $d['precio_mayoreo'] !== '' ? $d['precio_mayoreo'] : null;
         return [
@@ -138,7 +138,7 @@ class ProductoController extends Controller
     }
 
     /** Reemplaza las tallas por las del formulario y actualiza el stock total. */
-    private function guardarTallas(Producto $producto, array $tallas): void
+    protected function guardarTallas(Producto $producto, array $tallas): void
     {
         $nuevas = collect($tallas)->mapWithKeys(fn ($t) => [mb_strtoupper(trim($t['talla'])) => (int) $t['stock']]);
 
@@ -150,7 +150,7 @@ class ProductoController extends Controller
         $producto->recalcularStock();
     }
 
-    private function subirImagen(Request $request): ?string
+    protected function subirImagen(Request $request): ?string
     {
         if (!$request->hasFile('imagen')) return null;
         $archivo = $request->file('imagen');
@@ -159,7 +159,7 @@ class ProductoController extends Controller
         return $nombre;
     }
 
-    private function borrarImagen(?string $nombre): void
+    protected function borrarImagen(?string $nombre): void
     {
         if ($nombre && is_file($ruta = public_path(self::CARPETA . '/' . basename($nombre)))) {
             @unlink($ruta);

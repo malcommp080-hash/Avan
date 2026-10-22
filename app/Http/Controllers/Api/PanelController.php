@@ -23,7 +23,21 @@ class PanelController extends ApiController
                 'cliente' => $v->cliente?->nombre_completo ?? '—', 'origen' => $v->Origen,
             ]);
 
+        // Ventas por mes (últimos 6 meses, aunque no tengan ventas), igual que el dashboard web
+        $porMes = Venta::reales()->get(['Fecha', 'Total'])
+            ->groupBy(fn ($v) => $v->Fecha->format('Y-m'))
+            ->map(fn ($g) => (float) $g->sum('Total'));
+        $meses = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $mes = Carbon::now()->startOfMonth()->subMonths($i);
+            $meses[] = ['etiqueta' => ucfirst($mes->translatedFormat('M Y')), 'total' => $porMes[$mes->format('Y-m')] ?? 0];
+        }
+
         return response()->json([
+            'meses'          => $meses,
+            'ultimosClientes' => Cliente::orderByDesc('Id_cliente')->limit(5)->get()->map(fn ($c) => [
+                'id' => $c->Id_cliente, 'nombre' => $c->nombre_completo, 'telefono' => $c->Telefono, 'direccion' => $c->Direccion,
+            ]),
             'saludo'         => $this->saludo(),
             'totalClientes'  => Cliente::count(),
             'totalVentas'    => Venta::reales()->count(),

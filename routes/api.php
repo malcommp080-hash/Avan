@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::prefix('admin')->group(function () {
     Route::post('/login', [Api\AuthController::class, 'login'])->middleware('throttle:20,1');
+    Route::post('/recuperar', [Api\AuthController::class, 'recuperar'])->middleware('throttle:5,1');
 
     Route::middleware('admin.api')->group(function () {
         Route::post('/logout', [Api\AuthController::class, 'logout']);
@@ -44,6 +45,10 @@ Route::prefix('admin')->group(function () {
         Route::post('/pedidos-clientes', [Api\PedidoClienteController::class, 'store']);
         Route::delete('/pedidos-clientes/{pedido}', [Api\PedidoClienteController::class, 'destroy']);
 
+        Route::get('/pedidos-proveedores', [Api\PedidoProveedorController::class, 'index']);
+        Route::post('/pedidos-proveedores', [Api\PedidoProveedorController::class, 'store']);
+        Route::delete('/pedidos-proveedores/{pedido}', [Api\PedidoProveedorController::class, 'destroy']);
+
         Route::get('/inventario', [Api\InventarioController::class, 'index']);
         Route::put('/inventario/{producto}', [Api\InventarioController::class, 'update']);
 
@@ -52,6 +57,21 @@ Route::prefix('admin')->group(function () {
         Route::post('/clientes', [Api\ClienteController::class, 'store']);
         Route::put('/clientes/{cliente}', [Api\ClienteController::class, 'update']);
         Route::delete('/clientes/{cliente}', [Api\ClienteController::class, 'destroy']);
+
+        Route::get('/prendas', [Api\PrendaController::class, 'index']);
+        Route::post('/prendas', [Api\PrendaController::class, 'store']);
+        Route::put('/prendas/{prenda}', [Api\PrendaController::class, 'update']);
+        Route::delete('/prendas/{prenda}', [Api\PrendaController::class, 'destroy']);
+
+        // La imagen va como multipart, por eso la edición también es POST
+        Route::get('/productos', [Api\ProductoController::class, 'index']);
+        Route::post('/productos', [Api\ProductoController::class, 'store']);
+        Route::post('/productos/{producto}', [Api\ProductoController::class, 'update']);
+        Route::delete('/productos/{producto}', [Api\ProductoController::class, 'destroy']);
+
+        // Sistema
+        Route::get('/respaldo', [Api\RespaldoController::class, 'descargar']);
+        Route::get('/reporte-clientes', [\App\Http\Controllers\ReportePdfController::class, 'clientes']);
 
         Route::get('/proveedores', [Api\ProveedorController::class, 'index']);
         Route::post('/proveedores', [Api\ProveedorController::class, 'store']);
@@ -65,5 +85,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/usuarios', [Api\EmpleadoController::class, 'store']);
         Route::put('/usuarios/{usuario}', [Api\EmpleadoController::class, 'update']);
         Route::delete('/usuarios/{usuario}', [Api\EmpleadoController::class, 'destroy']);
+        Route::get('/bitacora', [Api\SistemaController::class, 'bitacora']);
+        Route::post('/restaurar', [Api\RespaldoController::class, 'restaurar']);
     });
 });
